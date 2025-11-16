@@ -3,6 +3,7 @@ import 'package:imc_calculator/components/calculate_button.dart';
 import 'package:imc_calculator/components/gender_selector.dart';
 import 'package:imc_calculator/components/height_selector.dart';
 import 'package:imc_calculator/components/number_selector.dart';
+import 'package:imc_calculator/screens/imc_result_screen.dart';
 
 class ImcHomeScreen extends StatefulWidget {
   const ImcHomeScreen({super.key});
@@ -16,7 +17,6 @@ class _ImcHomeScreenState extends State<ImcHomeScreen> {
   int _peso = 0;
   int _edad = 0;
   int _altura = 160; // altura inicial
-  
 
   // PESO
   void _incrementPeso(int newValue) {
@@ -41,15 +41,15 @@ class _ImcHomeScreenState extends State<ImcHomeScreen> {
     return Column(
       children: [
         GenderSelector(
-  initialValue: _genero,
-  onGenderChanged: (newGender) {
-    setState(() {
-      _genero = newGender;
-    });
-  },
-),
+          initialValue: _genero,
+          onGenderChanged: (newGender) {
+            setState(() {
+              _genero = newGender;
+            });
+          },
+        ),
 
-SizedBox(height: 10),
+        SizedBox(height: 10),
 
         SizedBox(height: 10),
 
@@ -92,7 +92,17 @@ SizedBox(height: 10),
         CalculateButton(
           buttonText: "CALCULAR",
           onPressed: () {
-            print("Peso: $_peso   Edad: $_edad   Altura: $_altura  Genero: $_genero");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ImcResultScreen(
+                  genero: _genero, // "Hombre" o "Mujer"
+                  peso: _peso,
+                  edad: _edad,
+                  altura: _altura,
+                ),
+              ),
+            );
           },
         ),
       ],

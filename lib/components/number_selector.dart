@@ -3,10 +3,10 @@ import 'package:imc_calculator/core/app_colors.dart';
 import 'package:imc_calculator/core/text_stytles.dart';
 
 class NumberSelector extends StatefulWidget {
-  final String label; // Recibe el texto que indica el tipo de valor
-  final int initialValue; // Valor inicial para el selector
-  final Function(int) onIncrement; // Función para incrementar el valor
-  final Function(int) onDecrement; // Función para decrementar el valor
+  final String label;
+  final int initialValue;
+  final Function(int) onIncrement;
+  final Function(int) onDecrement;
 
   const NumberSelector({
     super.key,
@@ -21,14 +21,40 @@ class NumberSelector extends StatefulWidget {
 }
 
 class _NumberSelectorState extends State<NumberSelector> {
-  late String label; // Variable para el label (input1)
-  late int value; // Variable para el valor que cambia
+  late int value;
+  late TextEditingController controller;
 
   @override
   void initState() {
     super.initState();
-    label = widget.label;  // Inicializamos el label con el valor pasado
-    value = widget.initialValue;  // Inicializamos el valor con el valor pasado
+    value = widget.initialValue;
+
+    controller = TextEditingController(text: value.toString());
+
+    controller.addListener(() {
+      final text = controller.text;
+      if (text.isNotEmpty && int.tryParse(text) != null) {
+        setState(() {
+          value = int.parse(text);
+        });
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(NumberSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initialValue != widget.initialValue) {
+      value = widget.initialValue;
+      controller.text = value.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose(); // ← IMPORTANTE
+    super.dispose();
   }
 
   @override
@@ -38,72 +64,78 @@ class _NumberSelectorState extends State<NumberSelector> {
         color: AppColors.backgroundsComponent,
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: EdgeInsets.all(16), // Agregamos padding para mejorar el layout
+      padding: EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(label, style: TextStyles.bodyText),  // Mostrar el label (input1)
-          Text(
-            "$value", // Mostrar el valor de la variable
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 38,
-              fontWeight: FontWeight.bold,
+          Text(widget.label, style: TextStyles.bodyText),
+          SizedBox(height: 8),
+
+          SizedBox(
+            width: 80,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 34,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+              ),
+              onChanged: (text) {
+                if (int.tryParse(text) != null) {
+                  widget.onIncrement(int.parse(text));
+                }
+              },
             ),
           ),
+
+          SizedBox(height: 8),
+
           Row(
-            mainAxisAlignment: MainAxisAlignment.center, // Centrado de los botones
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Botón de "menos"
               GestureDetector(
                 onTap: () {
                   setState(() {
                     if (value > 0) {
-                      value--; // Decrementar el valor
-                      widget.onDecrement(value); // Llamamos a la función de decremento
+                      value--;
+                      controller.text = value.toString();
+                      widget.onDecrement(value);
                     }
                   });
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.primary, // Color de fondo
-                    borderRadius: BorderRadius.circular(50), // Hacer el fondo circular
-                  ),
-                  padding: EdgeInsets.all(16), // Padding para ajustar el tamaño del contenedor
-                  child: Icon(
-                    Icons.remove,
-                    size: 30, // Tamaño del ícono
-                    color: Colors.white,
-                  ),
-                ),
+                child: _circleButton(Icons.remove),
               ),
-              SizedBox(width: 20), // Espacio entre los botones
-              // Botón de "más"
+              SizedBox(width: 20),
               GestureDetector(
                 onTap: () {
                   setState(() {
-                    value++; // Incrementar el valor
-                    widget.onIncrement(value); // Llamamos a la función de incremento
+                    value++;
+                    controller.text = value.toString();
+                    widget.onIncrement(value);
                   });
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.primary, // Color de fondo
-                    borderRadius: BorderRadius.circular(50), // Hacer el fondo circular
-                  ),
-                  padding: EdgeInsets.all(16), // Padding para ajustar el tamaño del contenedor
-                  child: Icon(
-                    Icons.add,
-                    size: 30, // Tamaño del ícono
-                    color: Colors.white,
-                  ),
-                ),
+                child: _circleButton(Icons.add),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _circleButton(IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        shape: BoxShape.circle,
+      ),
+      padding: EdgeInsets.all(16),
+      child: Icon(icon, color: Colors.white, size: 28),
     );
   }
 }
