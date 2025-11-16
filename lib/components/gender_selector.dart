@@ -3,13 +3,15 @@ import 'package:imc_calculator/core/app_colors.dart';
 import 'package:imc_calculator/core/text_stytles.dart';
 
 class GenderSelector extends StatefulWidget {
-  final String initialValue;              // Valor que viene del PADRE
-  final Function(String) onGenderChanged; // Callback para enviar al PADRE
+  final String initialValue;
+  final Function(String) onGenderChanged;
+  final double density;
 
   const GenderSelector({
     super.key,
     required this.initialValue,
     required this.onGenderChanged,
+    this.density = 1.0,
   });
 
   @override
@@ -22,94 +24,144 @@ class _GenderSelectorState extends State<GenderSelector> {
   @override
   void initState() {
     super.initState();
-
-    // 👉 Inicializar el estado interno con lo que viene del padre
     selectedGender = widget.initialValue;
+  }
+
+  @override
+  void didUpdateWidget(covariant GenderSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue &&
+        widget.initialValue != selectedGender) {
+      selectedGender = widget.initialValue;
+    }
   }
 
   void _selectGender(String gender) {
     setState(() {
       selectedGender = gender;
     });
-
-    // 👉 Avisar al padre que cambió el género
     widget.onGenderChanged(gender);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        /// ------------------------------
-        ///      TARJETA: HOMBRE
-        /// ------------------------------
-        Expanded(
-          child: GestureDetector(
-            onTap: () => _selectGender("Hombre"),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16,
-                top: 16,
-                bottom: 16,
-                right: 8,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: selectedGender == "Hombre"
-                      ? AppColors.backgroundsComponentSelected
-                      : AppColors.backgroundsComponent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      Image.asset("assets/images/male.png", height: 100),
-                      const SizedBox(height: 10),
-                      Text("HOMBRE", style: TextStyles.bodyText),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool stackCards = constraints.maxWidth < 360;
+        final double scale = widget.density.clamp(0.6, 1.0);
+        final double spacing = (12 * scale).clamp(8.0, 12.0);
 
-        /// ------------------------------
-        ///      TARJETA: MUJER
-        /// ------------------------------
-        Expanded(
-          child: GestureDetector(
+        final cards = [
+          _GenderCard(
+            label: "HOMBRE",
+            assetPath: "assets/images/male.png",
+            isSelected: selectedGender == "Hombre",
+            onTap: () => _selectGender("Hombre"),
+            isCompact: stackCards,
+            density: scale,
+          ),
+          _GenderCard(
+            label: "MUJER",
+            assetPath: "assets/images/female.png",
+            isSelected: selectedGender == "Mujer",
             onTap: () => _selectGender("Mujer"),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 8,
-                top: 16,
-                bottom: 16,
-                right: 16,
+            isCompact: stackCards,
+            density: scale,
+          ),
+        ];
+
+        if (stackCards) {
+          return Column(
+            children: [
+              cards[0],
+              SizedBox(height: spacing),
+              cards[1],
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: cards[0]),
+            SizedBox(width: spacing),
+            Expanded(child: cards[1]),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _GenderCard extends StatelessWidget {
+  final String label;
+  final String assetPath;
+  final bool isSelected;
+  final bool isCompact;
+  final VoidCallback onTap;
+  final double density;
+
+  const _GenderCard({
+    required this.label,
+    required this.assetPath,
+    required this.isSelected,
+    required this.onTap,
+    required this.isCompact,
+    required this.density,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double scale = density.clamp(0.6, 1.0);
+    final double radius = (16 * scale).clamp(12.0, 16.0);
+    final double cardPadding = (16 * scale).clamp(10.0, 16.0);
+    final double innerSpacing = (12 * scale).clamp(8.0, 12.0);
+    final double baseIconHeight = isCompact ? 90 : 110;
+    final double iconHeight = (baseIconHeight * scale).clamp(
+      70.0,
+      baseIconHeight.toDouble(),
+    );
+    final TextStyle textStyle = TextStyles.bodyText.copyWith(
+      fontSize: (18 * scale).clamp(14.0, 18.0),
+    );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.all(cardPadding),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.backgroundsComponentSelected
+                  : AppColors.backgroundsComponent,
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.backgroundsComponent,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: selectedGender == "Mujer"
-                      ? AppColors.backgroundsComponentSelected
-                      : AppColors.backgroundsComponent,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      Image.asset("assets/images/female.png", height: 100),
-                      const SizedBox(height: 10),
-                      Text("MUJER", style: TextStyles.bodyText),
-                    ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: iconHeight,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Image.asset(assetPath),
                   ),
                 ),
-              ),
+                SizedBox(height: innerSpacing),
+                Text(label, style: textStyle),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

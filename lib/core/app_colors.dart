@@ -7,10 +7,8 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
 
-
   //Backgrounds
   static const Color backgrounds = Color(0xFF0E0B20);
   static const Color backgroundsComponent = Color(0xFF1D1E33);
   static const Color backgroundsComponentSelected = Color(0xFF4F548B);
-
 }

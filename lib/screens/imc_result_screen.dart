@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:imc_calculator/components/calculate_button.dart';
 import 'package:imc_calculator/core/app_colors.dart';
-import 'package:imc_calculator/core/text_stytles.dart';
 
 class ImcResultScreen extends StatelessWidget {
   final String genero;
@@ -16,13 +16,11 @@ class ImcResultScreen extends StatelessWidget {
     required this.altura,
   });
 
-  // ⭐ Calcular IMC
   double calcularIMC() {
-    double alturaEnMetros = altura / 100;
+    final double alturaEnMetros = altura / 100;
     return peso / (alturaEnMetros * alturaEnMetros);
   }
 
-  // ⭐ Clasificación
   String clasificacionIMC(double imc) {
     if (imc < 18.5) return "BAJO PESO";
     if (imc < 25) return "NORMAL";
@@ -30,7 +28,6 @@ class ImcResultScreen extends StatelessWidget {
     return "OBESIDAD";
   }
 
-  // ⭐ Color según IMC
   Color getColorByImc(double imc) {
     return switch (imc) {
       < 18.5 => Colors.blue,
@@ -40,37 +37,35 @@ class ImcResultScreen extends StatelessWidget {
     };
   }
 
-  // ⭐ Descripción + Recomendaciones
   String recomendaciones(double imc) {
     if (imc < 18.5) {
-      return "Tu IMC indica bajo peso. "
+      return "Tu IMC indica bajo peso.\n"
           "Recomendaciones:\n"
-          "• Aumenta tu consumo calórico con alimentos nutritivos.\n"
-          "• Realiza ejercicios de fuerza para ganar masa muscular.\n"
-          "• Come cada 3–4 horas.\n"
-          "• Considera una evaluación nutricional.";
+          "- Aumenta tu consumo calorico con alimentos nutritivos.\n"
+          "- Realiza ejercicios de fuerza para ganar masa muscular.\n"
+          "- Come cada 3 a 4 horas.\n"
+          "- Considera una evaluacion nutricional.";
     } else if (imc < 25) {
-      return "Tienes un peso saludable. "
+      return "Tienes un peso saludable.\n"
           "Recomendaciones:\n"
-          "• Mantén una dieta equilibrada.\n"
-          "• Realiza actividad física 3–5 veces por semana.\n"
-          "• Hidrátate bien.\n"
-          "• Duerme de 7 a 9 horas.";
+          "- Manten una dieta equilibrada.\n"
+          "- Realiza actividad fisica 3 a 5 veces por semana.\n"
+          "- Hidratate bien.\n"
+          "- Duerme de 7 a 9 horas.";
     } else if (imc < 30) {
-      return "Tu IMC indica sobrepeso. "
+      return "Tu IMC indica sobrepeso.\n"
           "Recomendaciones:\n"
-          "• Reduce azúcares y harinas refinadas.\n"
-          "• Aumenta consumo de vegetales y proteínas.\n"
-          "• Haz ejercicios cardiovasculares y de fuerza.\n"
-          "• Mantén un déficit calórico moderado.";
+          "- Reduce azucares y harinas refinadas.\n"
+          "- Aumenta consumo de vegetales y proteinas.\n"
+          "- Haz ejercicios cardiovasculares y de fuerza.\n"
+          "- Manten un deficit calorico moderado.";
     } else {
-      return "Tu IMC indica obesidad. "
+      return "Tu IMC indica obesidad.\n"
           "Recomendaciones:\n"
-          "• Inicia un plan alimenticio con control de calorías.\n"
-          "• Aumenta tu actividad física progresivamente.\n"
-          "• Evita bebidas azucaradas y comidas procesadas.\n"
-          "• Considera asesoría profesional.\n"
-          "• Lleva seguimiento semanal.";
+          "- Inicia un plan alimenticio controlando calorias.\n"
+          "- Aumenta tu actividad fisica progresivamente.\n"
+          "- Evita bebidas azucaradas y comidas procesadas.\n"
+          "- Considera asesoria profesional y seguimiento.";
     }
   }
 
@@ -82,112 +77,119 @@ class ImcResultScreen extends StatelessWidget {
     final String descripcion = recomendaciones(imc);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Resultado"),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text("Resultado")),
       backgroundColor: AppColors.backgrounds,
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Tu resultado",
-              style: TextStyle(
-                fontSize: 34,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isWide = constraints.maxWidth > 700;
+            const double baseContentWidth = 520;
+            final double density = (constraints.maxWidth / baseContentWidth)
+                .clamp(0.7, 1.0);
+            final double horizontalPadding = constraints.maxWidth < 420
+                ? 12
+                : (isWide ? 40 : 16);
+            final double verticalPadding = constraints.maxHeight < 720
+                ? 16
+                : 24;
+            final double sectionSpacing = 20 * density;
+            final double blockSpacing = 24 * density;
+            final double titleFontSize = (34 * density).clamp(24.0, 34.0);
+            final double cardRadius = (16 * density).clamp(12.0, 16.0);
+            final double cardPaddingVertical = (40 * density).clamp(28.0, 40.0);
+            final double cardPaddingHorizontal = (24 * density).clamp(
+              16.0,
+              24.0,
+            );
+            final double categoriaFontSize = (28 * density).clamp(20.0, 28.0);
+            final double imcFontSize = (60 * density).clamp(38.0, 60.0);
+            final double descriptionPadding = (16 * density).clamp(12.0, 16.0);
+            final double descriptionFontSize = (16 * density).clamp(13.0, 16.0);
+            final double descriptionLineHeight = 1.3 + (1 - density) * 0.2;
 
-            SizedBox(height: 20),
-
-            // ⭐ CARD CENTRAL
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundsComponent,
-                  borderRadius: BorderRadius.circular(16),
+            return Align(
+              alignment: Alignment.topCenter,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: verticalPadding,
                 ),
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-
-                child: Column(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    // Estado
-    Text(
-      categoria,
-      style: TextStyle(
-        color: categoriaColor,
-        fontSize: 28,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-    SizedBox(height: 20),
-
-    // IMC
-    Text(
-      imc.toStringAsFixed(2),
-      style: TextStyle(
-        fontSize: 60,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    ),
-    SizedBox(height: 20),
-
-    // 🟩 Contenedor interno organizado
-    Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        descripcion,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.white70,
-          height: 1.4,
-        ),
-      ),
-    ),
-  ],
-),
-
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // BOTÓN FINALIZAR
-            SizedBox(
-              height: 60,
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: isWide ? 800 : 520),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        "Tu resultado",
+                        style: TextStyle(
+                          fontSize: titleFontSize,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: sectionSpacing),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.backgroundsComponent,
+                          borderRadius: BorderRadius.circular(cardRadius),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: cardPaddingVertical,
+                          horizontal: cardPaddingHorizontal,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              categoria,
+                              style: TextStyle(
+                                color: categoriaColor,
+                                fontSize: categoriaFontSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: sectionSpacing),
+                            Text(
+                              imc.toStringAsFixed(2),
+                              style: TextStyle(
+                                fontSize: imcFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: sectionSpacing),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(descriptionPadding),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: SelectableText(
+                                descripcion,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: descriptionFontSize,
+                                  color: Colors.white70,
+                                  height: descriptionLineHeight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: blockSpacing),
+                      CalculateButton(
+                        buttonText: "Finalizar",
+                        density: density,
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
                 ),
-                child: Text(
-                  "Finalizar",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
               ),
-            )
-          ],
+            );
+          },
         ),
       ),
     );
